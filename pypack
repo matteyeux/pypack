@@ -1,0 +1,68 @@
+#!/usr/bin/python3
+from __future__ import with_statement
+from contextlib import closing
+from zipfile import ZipFile, ZIP_DEFLATED
+from shutil import copyfile
+import os, sys, zipfile, shutil
+
+def unzip (ipsw, dest) :
+	if os.path.exists("IPSW") :
+		shutil.rmtree("IPSW")
+
+	with zipfile.ZipFile(ipsw,"r") as zip_ref:
+		print("[i] extracting", ipsw)
+		zip_ref.extractall(dest)
+		print("[i] done")
+
+
+def zipdir(dir, zipname):
+    assert os.path.isdir(dir)
+    print("[i] packing", zipname)
+    with closing(ZipFile(zipname, "w", ZIP_DEFLATED)) as z:
+        for root, dirs, files in os.walk(dir):
+            # NOTE: ignore empty directories
+            for fn in files:
+                absfn = os.path.join(root, fn)
+                zfn = absfn[len(dir)+len(os.sep):] #XXX: relative path
+                z.write(absfn, zfn)
+    print("[i] packing : done")
+
+
+def copy2cf(build_manifest, baseband) :
+	print("[i] adding new BuildManifest")
+	os.remove("IPSW/BuildManifest.plist")
+	copyfile(build_manifest, "IPSW/"+ build_manifest)
+	print("[i] adding baseband")
+	copyfile(baseband, "IPSW/Firmware/" + baseband) # Doesn't matter if current baseband is still in IPSW (yea I tested it)
+	
+def restore (customfirmware): # function not used yet
+	cmd = "idevicererestore -d -r " + customfirmware
+	print(cmd)
+	#os.system(cmd) 
+
+def usage(thatname) :
+	print("usage :", thatname,"-i <ipsw_in> <ipsw_out> -m <build_manifest> -b <baseband>") #
+	sys.exit(1)
+
+if __name__ == '__main__':
+	
+	argc = len(sys.argv)
+	if argc != 8 :
+	 	usage(sys.argv[0])
+	for i in range(0,argc):
+		if sys.argv[i] == "-i":
+			ipswfile = sys.argv[i+1]
+			customipsw = sys.argv[i+2]
+		elif sys.argv[i] == "-m" : 
+			bm = sys.argv[i+1]
+		elif sys.argv[i] == "-b" :
+			bb = sys.argv[i+1] 
+
+	if os.path.exists(customipsw) :
+		print(customipsw, "already exists")
+		sys.exit(1)
+
+	unzip(ipswfile, "IPSW") 
+	copy2cf(bm, bb)
+	zipdir("IPSW", customipsw)
+

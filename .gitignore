@@ -1,0 +1,5 @@
+*.ipsw
+clean
+resources
+IPSW
+test.py
