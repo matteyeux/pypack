@@ -4,7 +4,7 @@ Simple tool to prepare a modified IPSW for idevicererestore working with [Alitek
 
 ### Usage
 
-`usage : ./pyrestore.py -i <ipsw_in> <ipsw_out> -m <build_manifest> <-b baseband>`
+`usage : ./pyrestore.py -i <ipsw_in> <ipsw_out> -m <build_manifest> -b <baseband>`
 
 You need : 
  - **BuildManifest.plist** you correctly patched
